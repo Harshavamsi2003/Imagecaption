@@ -23,26 +23,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Global configuration
-class GLOBAL:
-    IMG_SIZE = 384
-    SEED = 8
-    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-    MODEL_DIR = os.path.join(ROOT_DIR, 'model')
-    CONFIG_FILE = os.path.join(MODEL_DIR, 'config.json')
-    WEIGHTS_FILE = os.path.join(MODEL_DIR, 'weights.pt')
-    TOKENIZER_FILE = os.path.join(MODEL_DIR, 'vocab.pkl')
-
-# Print the paths for debugging
-print("Root directory:", GLOBAL.ROOT_DIR)
-print("Model directory:", GLOBAL.MODEL_DIR)
-print("Config file path:", GLOBAL.CONFIG_FILE)
-print("Weights file path:", GLOBAL.WEIGHTS_FILE)
-print("Tokenizer file path:", GLOBAL.TOKENIZER_FILE)
-
 # Seed everything for reproducibility
-seed_everything(GLOBAL.SEED)
+seed_everything(8)  # Fixed seed for reproducibility
+
+# Define paths
+MODEL_DIR = os.path.join("app", "model")  # Path to the model folder
+CONFIG_FILE = os.path.join(MODEL_DIR, "config.json")  # Path to config file
+WEIGHTS_FILE = os.path.join(MODEL_DIR, "weights.pt")  # Path to weights file
+TOKENIZER_FILE = os.path.join(MODEL_DIR, "vocab.pkl")  # Path to tokenizer file
+
+# Print paths for debugging
+print("Config file path:", CONFIG_FILE)
+print("Weights file path:", WEIGHTS_FILE)
+print("Tokenizer file path:", TOKENIZER_FILE)
 
 # Load the model, tokenizer, and preprocessor
 @st.cache_resource
@@ -50,13 +43,13 @@ def load(config):
     try:
         # Define the image preprocessor
         preprocessor = Compose([
-            Resize((GLOBAL.IMG_SIZE, GLOBAL.IMG_SIZE)),
+            Resize((384, 384)),  # Fixed image size
             ToTensor()
         ])
 
         # Load the tokenizer
         print("Loading tokenizer...")
-        tokenizer: Tokenizer = Tokenizer.load(GLOBAL.TOKENIZER_FILE)
+        tokenizer: Tokenizer = Tokenizer.load(TOKENIZER_FILE)
         print("Tokenizer loaded successfully. Vocabulary size:", len(tokenizer.vocab))
 
         # Initialize the model
@@ -64,13 +57,13 @@ def load(config):
         model = Transformer(
             **config,
             vocab_size=len(tokenizer.vocab),
-            device=GLOBAL.DEVICE,
+            device="cuda" if torch.cuda.is_available() else "cpu",
             pad_idx=tokenizer.vocab.pad_idx
-        ).to(GLOBAL.DEVICE)
+        ).to("cuda" if torch.cuda.is_available() else "cpu")
 
         # Load the model weights with weights_only=False
         print("Loading model weights...")
-        model.load_state_dict(torch.load(GLOBAL.WEIGHTS_FILE, map_location=GLOBAL.DEVICE, weights_only=False))
+        model.load_state_dict(torch.load(WEIGHTS_FILE, map_location="cuda" if torch.cuda.is_available() else "cpu", weights_only=False))
         print("Model weights loaded successfully.")
 
         return preprocessor, tokenizer, model
@@ -81,7 +74,7 @@ def load(config):
 
 # Load the configuration file
 try:
-    config = read_json(GLOBAL.CONFIG_FILE)
+    config = read_json(CONFIG_FILE)
     print("Config loaded successfully.")
 except Exception as e:
     st.error(f"Error loading config file: {e}")
@@ -118,7 +111,7 @@ if uploaded_file is not None:
                 tokenizer=tokenizer,
                 img=image,
                 max_len=int(config['max_len']),
-                device=GLOBAL.DEVICE,
+                device="cuda" if torch.cuda.is_available() else "cpu",
                 preprocessor=preprocessor
             )
 
