@@ -34,7 +34,11 @@ class GLOBAL:
     WEIGHTS_FILE = os.path.join(MODEL_DIR, 'weights.pt')
     TOKENIZER_FILE = os.path.join(MODEL_DIR, 'vocab.pkl')
 
-# Print the tokenizer file path for debugging
+# Print the paths for debugging
+print("Root directory:", GLOBAL.ROOT_DIR)
+print("Model directory:", GLOBAL.MODEL_DIR)
+print("Config file path:", GLOBAL.CONFIG_FILE)
+print("Weights file path:", GLOBAL.WEIGHTS_FILE)
 print("Tokenizer file path:", GLOBAL.TOKENIZER_FILE)
 
 # Seed everything for reproducibility
