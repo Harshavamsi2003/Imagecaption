@@ -34,11 +34,7 @@ class GLOBAL:
     WEIGHTS_FILE = os.path.join(MODEL_DIR, 'weights.pt')
     TOKENIZER_FILE = os.path.join(MODEL_DIR, 'vocab.pkl')
 
-# Print the paths for debugging
-print("Root directory:", GLOBAL.ROOT_DIR)
-print("Model directory:", GLOBAL.MODEL_DIR)
-print("Config file path:", GLOBAL.CONFIG_FILE)
-print("Weights file path:", GLOBAL.WEIGHTS_FILE)
+# Print the tokenizer file path for debugging
 print("Tokenizer file path:", GLOBAL.TOKENIZER_FILE)
 
 # Seed everything for reproducibility
@@ -68,9 +64,9 @@ def load(config):
             pad_idx=tokenizer.vocab.pad_idx
         ).to(GLOBAL.DEVICE)
 
-        # Load the model weights
+        # Load the model weights with weights_only=False
         print("Loading model weights...")
-        model.load_state_dict(torch.load(GLOBAL.WEIGHTS_FILE, map_location=GLOBAL.DEVICE))
+        model.load_state_dict(torch.load(GLOBAL.WEIGHTS_FILE, map_location=GLOBAL.DEVICE, weights_only=False))
         print("Model weights loaded successfully.")
 
         return preprocessor, tokenizer, model
